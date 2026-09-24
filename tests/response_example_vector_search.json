@@ -1,0 +1,111 @@
+{
+  "query": "Donnes moi deux exemples d'ouverture simple. ",
+  "lang": "fr",
+  "results": [
+    {
+      "opening_name": "Open Game",
+      "opening_name_fr": "Début ouvert",
+      "lang": "fr",
+      "eco_code": "C20",
+      "moves_san": "1. e4 e5",
+      "source_url": "https://en.wikipedia.org/wiki/List_of_ECO_codes",
+      "description_url": "https://fr.wikipedia.org/wiki/D%C3%A9but_ouvert",
+      "text": "Ouverture d'échecs : Début ouvert (Open Game), code ECO C20. Coups : 1. e4 e5.\n\nAux échecs, un début ouvert est une ouverture du jeu d'échecs qui débute par le coup 1.e4 des Blancs suivi par le coup symétrique 1...e5 des Noirs.\n\nLes autres réponses noires à 1.e4 constituent les débuts semi-ouverts.\n\nLes codes ECO associés vont de C20 à C99.\n\n1.e4 est le coup d'ouverture le plus populaire et il a beaucoup de qualités: il contribue au contrôle du centre, et libère deux pièces, la dame et le fou. Les ouvertures les plus connues et les plus anciennes commencent par 1.e4. Bobby Fischer le considérait comme le meilleur « comme le prouve la pratique ». Ce coup a cependant comme inconvénient de placer un pion sur une case non défendue et il affaiblit les cases d4 et f4. Si les Noirs imitent le coup des Blancs et jouent 1...e5, le résultat constitue une partie ouverte.",
+      "score": 0.5496733784675598,
+      "video": null
+    },
+    {
+      "opening_name": "Closed Game",
+      "opening_name_fr": "Début fermé",
+      "lang": "fr",
+      "eco_code": "D00",
+      "moves_san": "1. d4 d5",
+      "source_url": "https://en.wikipedia.org/wiki/List_of_ECO_codes",
+      "description_url": "https://fr.wikipedia.org/wiki/D%C3%A9but_ferm%C3%A9",
+      "text": "Ouverture d'échecs : Début fermé (Closed Game), code ECO D00. Coups : 1. d4 d5.\n\nAux échecs, un début fermé voire un jeu fermé est une ouverture qui débute par le coup 1.d4 des blancs (ouverture du pion dame) suivi par le coup symétrique 1...d5 des Noirs.\n\nLes autres réponses noires à 1.d4 constituent les débuts semi-fermés.\n\nLes codes ECO associés aux débuts fermés vont de D00 à D69.",
+      "score": 0.5348019599914551,
+      "video": {
+        "video_id": "z8rfjoukp08",
+        "title": "Les pièges du système de Londres que tu dois connaître !",
+        "channel_title": "Echecs I Massacrealouverture",
+        "published_at": "2021-02-16T10:00:14Z",
+        "duration_seconds": 1480,
+        "view_count": 128836,
+        "like_count": 2520,
+        "thumbnail_url": "https://i.ytimg.com/vi/z8rfjoukp08/hqdefault.jpg",
+        "url": "https://www.youtube.com/watch?v=z8rfjoukp08",
+        "embed_url": "https://www.youtube.com/embed/z8rfjoukp08"
+      }
+    },
+    {
+      "opening_name": "Bird Opening",
+      "opening_name_fr": "Ouverture Bird",
+      "lang": "fr",
+      "eco_code": "A02",
+      "moves_san": "1. f4",
+      "source_url": "https://en.wikipedia.org/wiki/List_of_ECO_codes",
+      "description_url": "https://fr.wikipedia.org/wiki/Ouverture_Bird",
+      "text": "Ouverture d'échecs : Ouverture Bird (Bird Opening), code ECO A02. Coups : 1. f4.\n\nL'ouverture Bird (aussi appelée début Bird ou selon certains système Bird) est une ouverture d’échecs caractérisée par le coup 1. f4. Elle tire son nom du maître britannique du XIXe siècle Henry Edward Bird (Portsea, 14 juillet 1830 – 11 avril 1908).\n\nSelon ChessBase, chez les maîtres, 1.f4 est le septième coup en popularité. Il est bien moins populaire que l'ouverture de flanc symétrique 1.c4 (l'ouverture anglaise) principalement parce que 1.f4 affaiblit quelque peu l'aile roi blanche. Un des rares grands maîtres à l'avoir employé régulièrement est le Danois Bent Larsen. 1.f4 est aussi fréquent dans les parties du GMI Henrik Danielsen.",
+      "score": 0.5224266052246094,
+      "video": {
+        "video_id": "CCEUSDoc6C0",
+        "title": "Le système BIRD pour gagner FACILE avec les Blancs",
+        "channel_title": "Julien Song",
+        "published_at": "2024-06-12T17:00:07Z",
+        "duration_seconds": 679,
+        "view_count": 120088,
+        "like_count": 3170,
+        "thumbnail_url": "https://i.ytimg.com/vi/CCEUSDoc6C0/hqdefault.jpg",
+        "url": "https://www.youtube.com/watch?v=CCEUSDoc6C0",
+        "embed_url": "https://www.youtube.com/embed/CCEUSDoc6C0"
+      }
+    },
+    {
+      "opening_name": "English Opening",
+      "opening_name_fr": "Ouverture anglaise",
+      "lang": "fr",
+      "eco_code": "A10",
+      "moves_san": "1. c4",
+      "source_url": "https://en.wikipedia.org/wiki/List_of_ECO_codes",
+      "description_url": "https://fr.wikipedia.org/wiki/Ouverture_anglaise",
+      "text": "Ouverture d'échecs : Ouverture anglaise (English Opening), code ECO A10. Coups : 1. c4.\n\nL'ouverture anglaise ou partie anglaise est une ouverture au jeu d'échecs qui correspond aux codes ECO A10 à A39; elle débute par le coup 1. c4. Par ce coup, les Blancs contrôlent le centre (la case d5).",
+      "score": 0.5167927145957947,
+      "video": {
+        "video_id": "Vq1jQ7T5yNQ",
+        "title": "Ouverture anglaise (3) : Partie d'échecs pédagogique",
+        "channel_title": "Progresser aux échecs avec Marc Quenehen",
+        "published_at": "2023-12-26T21:27:42Z",
+        "duration_seconds": 1620,
+        "view_count": 38807,
+        "like_count": 1544,
+        "thumbnail_url": "https://i.ytimg.com/vi/Vq1jQ7T5yNQ/hqdefault.jpg",
+        "url": "https://www.youtube.com/watch?v=Vq1jQ7T5yNQ",
+        "embed_url": "https://www.youtube.com/embed/Vq1jQ7T5yNQ"
+      }
+    },
+    {
+      "opening_name": "Queen's pawn",
+      "opening_name_fr": "Ouverture du pion dame",
+      "lang": "fr",
+      "eco_code": "A40",
+      "moves_san": "1. d4",
+      "source_url": "https://ficgs.com/index.php?page=search&keyword=1.%20d4&about=Queen%20s%20pawn",
+      "description_url": "https://fr.wikipedia.org/wiki/Ouverture_du_pion_dame",
+      "text": "Ouverture d'échecs : Ouverture du pion dame (Queen's pawn), code ECO A40. Coups : 1. d4.\n\nAux échecs, l'ouverture du pion dame ou ouverture dame, est une ouverture qui commence par 1. d4. Les codes ECO associés sont A40-A99, D00-D99 et E00–E99.\n\n1. d4 d5 (début fermé) 2. c4 (gambit dame) 2. Cf3 (début Capablanca) 2. Cc3 (début Betbeder)\n\n2. e4 suivi de 3. f3 (ou 4. f3): gambit Blackmar-Diemer\n\n2. Ff4 (attaque Harrwitz-Rubinstein ou système de Londres)\n\n2. g3 (système catalan) 2. Fg5 (attaque Hodgson)\n\n1... Cf6 (défense indienne) 1... f5 (défense hollandaise)\n\n1... c5 (gambit Benoni ou défense Benoni ancienne)\n\n1... d6 (défense indienne ancienne) 1... g6 (défense moderne) 1... e6 (défense franco-indienne)\n\n1... Cc6 (défense de Orenbourg ou défense du cavalier dame ou défense Nimzowitsch du pion dame)\n\n1... e5 (gambit Englund ou Charlick) 1... b5 (défense polonaise)",
+      "score": 0.5090423822402954,
+      "video": {
+        "video_id": "9KXbGlgz404",
+        "title": "Défense Hollandaise : DÉTRUISEZ n'importe quelle ouverture 1.d4 avec ce système !",
+        "channel_title": "Échecs pour Tous",
+        "published_at": "2025-08-25T15:27:14Z",
+        "duration_seconds": 861,
+        "view_count": 16615,
+        "like_count": 283,
+        "thumbnail_url": "https://i.ytimg.com/vi/9KXbGlgz404/hqdefault.jpg",
+        "url": "https://www.youtube.com/watch?v=9KXbGlgz404",
+        "embed_url": "https://www.youtube.com/embed/9KXbGlgz404"
+      }
+    }
+  ],
+  "videos_message": "Aucune vidéo pertinente en français trouvée pour « Début ouvert »."
+}

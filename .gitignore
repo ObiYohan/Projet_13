@@ -8,9 +8,13 @@ wheels/
 
 # Claude conf
 CLAUDE.md
+.claude
 
 # Virtual environments
 .venv
 
 # Environment variables
 .env
+
+# Milvus / etcd / minio runtime data
+volumes/

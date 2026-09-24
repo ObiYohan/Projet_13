@@ -1,0 +1,44 @@
+[
+    {
+    "eco_code": "B54",
+    "opening_name": "Sicilian",
+    "moves_san": "1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4",
+    "source_url": "https://ficgs.com/index.php?page=search&keyword=1.%20e4%20c5%202.%20Nf3%20d6%203.%20d4%20cxd4%204.%20Nxd4&about=Sicilian"
+    },
+    {
+    "eco_code": "A40",
+    "opening_name": "Queen's pawn",
+    "moves_san": "1. d4",
+    "source_url": "https://ficgs.com/index.php?page=search&keyword=1.%20d4&about=Queen%20s%20pawn"
+    },
+    {
+    "eco_code": "A80",
+    "opening_name": "Dutch",
+    "moves_san": "1. d4 f5",
+    "source_url": "https://ficgs.com/index.php?page=search&keyword=1.%20d4%20f5&about=Dutch"
+    },
+    {
+    "eco_code": "C00",
+    "opening_name": "French defense",
+    "moves_san": "1. e4 e6 2. d4 d5",
+    "source_url": "https://ficgs.com/index.php?page=search&keyword=1.%20e4%20e6%202.%20d4%20d5&about=French%20defense"
+    },
+    {
+    "eco_code": "C13",
+    "opening_name": "French : Classical",
+    "moves_san": "1. e4 e6 2. d4 d5 3. Nc3 Nf6 4. Bg5 Be7",
+    "source_url": "https://ficgs.com/index.php?page=search&keyword=1.%20e4%20e6%202.%20d4%20d5%203.%20Nc3%20Nf6%204.%20Bg5%20Be7&about=French%20%20%20Classical"
+    },
+    {
+    "eco_code": "C46",
+    "opening_name": "Four knights game",
+    "moves_san": "1. e4 e5 2. Nf3 Nc6 3. Nc3 Nf6",
+    "source_url": "https://ficgs.com/index.php?page=search&keyword=1.%20e4%20e5%202.%20Nf3%20Nc6%203.%20Nc3%20Nf6&about=Four%20knights%20game"
+    },
+    {
+    "eco_code": "C60",
+    "opening_name": "Ruy Lopez (Spanish Opening)",
+    "moves_san": "1. e4 e5 2. Nf3 Nc6 3. Bb5",
+    "source_url": "https://ficgs.com/index.php?page=search&keyword=1.%20e4%20e5%202.%20Nf3%20Nc6%203.%20Bb5&about=Ruy%20Lopez%20%20Spanish%20Opening"
+    }
+]
