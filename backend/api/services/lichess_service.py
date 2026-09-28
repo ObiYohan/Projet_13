@@ -48,8 +48,9 @@ class LichessService:
                 await asyncio.sleep(wait)
             self._last_request_at = time.monotonic()
 
-    async def get_opening_moves(self, fen: str) -> list[dict]:
-        """Return the theoretical moves known for `fen` from the masters database."""
+    async def explore(self, fen: str) -> dict:
+        """Return {"moves", "opening"} for `fen` from the masters database: the
+        theoretical moves, and the named opening ({eco, name}) or None."""
         params = {"fen": fen, "moves": 12, "topGames": 0, "recentGames": 0}
         headers = {"Authorization": f"Bearer {self._api_token}"} if self._api_token else {}
 
@@ -84,4 +85,4 @@ class LichessService:
                 )
 
             data = response.json()
-            return data.get("moves", [])
+            return {"moves": data.get("moves", []), "opening": data.get("opening")}

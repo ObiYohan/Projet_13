@@ -10,10 +10,9 @@ ENV STOCKFISH_PATH=/usr/games/stockfish
 ENV PYTHONPATH=/app
 ENV HF_HOME=/root/.cache/huggingface
 
-RUN pip install fastapi uvicorn httpx chess pymilvus langgraph
-RUN pip install torch --index-url https://download.pytorch.org/whl/cpu
-RUN pip install sentence-transformers
-RUN pip install google-api-python-client tzdata
+RUN pip install --no-cache-dir torch==2.14.0 --index-url https://download.pytorch.org/whl/cpu
+COPY backend/requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend/api ./api
 

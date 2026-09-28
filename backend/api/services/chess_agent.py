@@ -28,7 +28,7 @@ class ChessAgentService:
 
     async def get_theoretical_moves(self, fen: str) -> dict:
         board = parse_fen(fen)
-        raw_moves = await self._lichess.get_opening_moves(board.fen())
+        explored = await self._lichess.explore(board.fen())
 
         moves = [
             {
@@ -38,11 +38,11 @@ class ChessAgentService:
                 "draws": move["draws"],
                 "black": move["black"],
             }
-            for move in raw_moves
+            for move in explored["moves"]
             if board.is_legal(chess.Move.from_uci(move["uci"]))
         ]
 
-        return {"fen": board.fen(), "moves": moves}
+        return {"fen": board.fen(), "moves": moves, "opening": explored["opening"]}
 
     async def evaluate_position(self, fen: str) -> dict:
         board = parse_fen(fen)

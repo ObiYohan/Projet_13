@@ -1,0 +1,4 @@
+# Build context of the api image: only the backend is needed.
+*
+!backend/
+backend/**/__pycache__

@@ -65,12 +65,16 @@ async def vector_search_endpoint(
     query: str,
     top_k: int | None = Query(None, ge=1, le=10),
     with_videos: bool = True,
+    lang: Literal["fr", "en"] | None = None,
+    eco: str | None = Query(None, pattern=r"^[A-E]\d\d$"),
 ):
     """Semantic search over the openings indexed in Milvus: one result per
     opening (`top_k`, else the number asked for in the question, else 5), each
-    with up to 3 YouTube videos in the question's language (French or English)."""
+    with up to 3 YouTube videos in the question's language (French or English).
+    `lang` imposes the language of the passages and videos instead; `eco`
+    favours the openings of that ECO code when the corpus has some."""
     try:
-        found = await vector_search.run(query, top_k, with_videos)
+        found = await vector_search.run(query, top_k, with_videos, lang, eco)
     except MilvusServiceError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
     return {"query": query, **found}

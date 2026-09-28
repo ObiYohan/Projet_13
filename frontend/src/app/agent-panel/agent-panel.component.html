@@ -1,0 +1,136 @@
+@let theoryState = theory();
+@let evaluationState = evaluation();
+@let contextState = agent.context();
+
+<section class="agent-panel" aria-label="Recommandations de l'agent">
+  <header>
+    <div>
+      <h2>Recommandations de l'agent</h2>
+      <p class="position">{{ positionLabel() }}</p>
+    </div>
+    <div class="lang" role="group" aria-label="Langue du contexte et des vidéos">
+      <button type="button" [class.selected]="agent.lang() === 'fr'" [attr.aria-pressed]="agent.lang() === 'fr'" (click)="setLang('fr')">FR</button>
+      <button type="button" [class.selected]="agent.lang() === 'en'" [attr.aria-pressed]="agent.lang() === 'en'" (click)="setLang('en')">EN</button>
+    </div>
+  </header>
+
+  <article class="card">
+    <h3>Ouverture</h3>
+    @if (agent.currentOpening(); as opening) {
+      <p class="opening">
+        <span class="eco">{{ opening.eco }}</span> {{ openingTitle()?.name }}
+        @if (openingTitle()?.alias; as alias) {
+          <small class="alias">{{ alias }}</small>
+        }
+      </p>
+      @if (!opening.current) {
+        <p class="hint">Dernière ouverture reconnue : la position actuelle n'a pas de nom répertorié.</p>
+      }
+    } @else if (game.moves().length === 0) {
+      <p class="hint">Jouez un premier coup : l'agent identifiera l'ouverture.</p>
+    } @else {
+      <p class="hint">Aucune ouverture répertoriée pour ces coups.</p>
+    }
+  </article>
+
+  <article class="card">
+    <h3>Coups théoriques <small>parties de maîtres (Lichess)</small></h3>
+    @if (theoryState.status === 'loading') {
+      <p class="loading" role="status">Recherche des coups théoriques…</p>
+    } @else if (theoryState.status === 'error') {
+      <div class="error" role="alert">
+        <p>{{ theoryState.error }}</p>
+        <button type="button" (click)="agent.retryTheory()">Réessayer</button>
+      </div>
+    } @else if (outOfTheory()) {
+      <p class="warning">Hors théorie : aucune partie de maître ne continue depuis cette position. Stockfish prend le relais.</p>
+    } @else if (theoryState.status === 'success') {
+      <p class="hint">Cliquez sur un coup pour le jouer.</p>
+      <ul class="moves">
+        @for (move of theoryMoves(); track move.uci) {
+          <li>
+            <button type="button" class="san" (click)="playMove(move.uci)" [title]="'Jouer ' + move.san">{{ move.san }}</button>
+            <span class="games">{{ move.games }} parties</span>
+            <div class="results" role="img" [attr.aria-label]="move.white + ' % Blancs, ' + move.draws + ' % nulles, ' + move.black + ' % Noirs'">
+              <span class="white" [style.width.%]="move.white">{{ move.white > 12 ? move.white + '%' : '' }}</span>
+              <span class="draws" [style.width.%]="move.draws">{{ move.draws > 12 ? move.draws + '%' : '' }}</span>
+              <span class="black" [style.width.%]="move.black">{{ move.black > 12 ? move.black + '%' : '' }}</span>
+            </div>
+          </li>
+        }
+      </ul>
+    } @else if (game.isGameOver()) {
+      <p class="hint">Partie terminée.</p>
+    }
+  </article>
+
+  <article class="card">
+    <h3>Évaluation Stockfish</h3>
+    @if (evaluationState.status === 'loading') {
+      <p class="loading" role="status">Stockfish analyse la position…</p>
+    } @else if (evaluationState.status === 'error') {
+      <div class="error" role="alert">
+        <p>{{ evaluationState.error }}</p>
+        <button type="button" (click)="agent.requestEvaluation()">Réessayer</button>
+      </div>
+    } @else if (evaluationView(); as view) {
+      <div class="evaluation">
+        <span class="score">{{ view.score }}</span>
+        <span>{{ view.verdict }} <small>(profondeur {{ view.depth }})</small></span>
+      </div>
+      <div class="eval-bar" role="img" [attr.aria-label]="'Chances estimées des Blancs : ' + view.whiteShare + ' %'">
+        <span [style.width.%]="view.whiteShare"></span>
+      </div>
+    } @else if (!game.isGameOver()) {
+      <p class="hint">Lancée automatiquement quand la partie sort de la théorie.</p>
+      <button type="button" (click)="agent.requestEvaluation()" [disabled]="theoryState.status === 'loading'">
+        Évaluer maintenant
+      </button>
+    }
+  </article>
+
+  <article class="card">
+    <h3>Contexte de l'ouverture</h3>
+    @if (contextState.status === 'loading') {
+      <p class="loading" role="status">Recherche du contexte et des vidéos…</p>
+    } @else if (contextState.status === 'error') {
+      <div class="error" role="alert">
+        <p>{{ contextState.error }}</p>
+        <button type="button" (click)="agent.retryContext()">Réessayer</button>
+      </div>
+    } @else if (contextView(); as context) {
+      <p class="opening"><span class="eco">{{ context.eco }}</span> {{ context.name }}</p>
+      @if (context.closestMatch) {
+        <p class="hint">Fiche la plus proche de l'ouverture jouée dans notre base.</p>
+      }
+      <p class="line">{{ context.moves }}</p>
+      @for (paragraph of context.paragraphs; track $index) {
+        <p>{{ paragraph }}</p>
+      }
+      @if (context.sourceUrl) {
+        <a [href]="context.sourceUrl" target="_blank" rel="noopener noreferrer">Source : Wikipédia</a>
+      }
+    } @else if (contextState.status === 'success') {
+      <p class="hint">Aucune fiche trouvée pour cette ouverture.</p>
+    } @else {
+      <p class="hint">Le contexte s'affiche dès que l'ouverture est identifiée.</p>
+    }
+  </article>
+
+  <article class="card">
+    <h3>Vidéos explicatives</h3>
+    @if (contextState.status === 'loading') {
+      <p class="loading" role="status">Recherche des vidéos…</p>
+    } @else if (contextView(); as context) {
+      @if (context.videos.length) {
+        <app-video-list [videos]="context.videos" />
+      } @else {
+        <p class="hint">{{ context.videosMessage ?? 'Aucune vidéo pertinente trouvée.' }}</p>
+      }
+    } @else if (contextState.status === 'error') {
+      <p class="hint">Vidéos indisponibles pour le moment.</p>
+    } @else {
+      <p class="hint">Les vidéos s'affichent dès que l'ouverture est identifiée.</p>
+    }
+  </article>
+</section>

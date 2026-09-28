@@ -1,18 +1,61 @@
+# Coach d'ouvertures : interface Angular (frontend), API FastAPI + LangGraph (api),
+# chargement du corpus (openings-loader) et Milvus standalone (standalone, etcd, minio).
+# Démarrage : docker compose up -d --build   puis   http://localhost:4200
+
+x-backend: &backend
+  image: chess-agent-api
+  build:
+    context: .
+    dockerfile: backend/Dockerfile
+  env_file: .env
+  volumes:
+    - ./data:/app/data:ro
+    - hf_cache:/root/.cache/huggingface
+
 services:
-  api:
+  frontend:
     build:
-      context: .
-      dockerfile: backend/Dockerfile
+      context: ./frontend
+    ports:
+      - "${FRONTEND_PORT:-4200}:80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  api:
+    <<: *backend
     ports:
       - "${API_PORT:-8000}:8000"
-    env_file:
-      - .env
-    volumes:
-      - ./data:/app/data:ro
-      - hf_cache:/root/.cache/huggingface
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/healthcheck', timeout=5)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 180s
+      start_interval: 5s
+    depends_on:
+      openings-loader:
+        condition: service_completed_successfully
+      standalone:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # One-shot: loads data/openings.json into Milvus when the collection is empty
+  # (first start), does nothing otherwise. It also downloads the embedding
+  # model into hf_cache before the api starts.
+  openings-loader:
+    <<: *backend
+    command: ["python", "-m", "api.scripts.load_openings", "--if-empty"]
     depends_on:
       standalone:
         condition: service_healthy
+    restart: "no"
 
   milvus-volume-init:
     image: milvusdb/milvus:v3.0.2
@@ -34,10 +77,9 @@ services:
           chown "$${uid}:$${gid}" "$${marker}"
         fi
     volumes:
-      - ./volumes/milvus:/var/lib/milvus
+      - milvus_data:/var/lib/milvus
 
   etcd:
-    container_name: milvus-etcd
     image: quay.io/coreos/etcd:v3.5.25
     environment:
       - ETCD_AUTO_COMPACTION_MODE=revision
@@ -45,34 +87,35 @@ services:
       - ETCD_QUOTA_BACKEND_BYTES=4294967296
       - ETCD_SNAPSHOT_COUNT=50000
     volumes:
-      - ./volumes/etcd:/etcd
+      - etcd_data:/etcd
     command: etcd -advertise-client-urls=http://etcd:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
     healthcheck:
       test: ["CMD", "etcdctl", "endpoint", "health"]
       interval: 30s
       timeout: 20s
       retries: 3
+      start_period: 30s
+      start_interval: 5s
+    restart: unless-stopped
 
   minio:
-    container_name: milvus-minio
     image: quay.io/minio/minio:RELEASE.2024-05-28T17-19-04Z
     environment:
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
-    ports:
-      - "9001:9001"
-      - "9000:9000"
     volumes:
-      - ./volumes/minio:/minio_data
+      - minio_data:/minio_data
     command: minio server /minio_data --console-address ":9001"
     healthcheck:
       test: ["CMD", "mc", "ready", "local"]
       interval: 30s
       timeout: 20s
       retries: 3
+      start_period: 30s
+      start_interval: 5s
+    restart: unless-stopped
 
   standalone:
-    container_name: milvus-standalone
     image: milvusdb/milvus:v3.0.2
     command: ["milvus", "run", "standalone"]
     security_opt:
@@ -82,27 +125,25 @@ services:
       ETCD_ENDPOINTS: etcd:2379
       MINIO_ADDRESS: minio:9000
     volumes:
-      - ./volumes/milvus:/var/lib/milvus
+      - milvus_data:/var/lib/milvus
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
       interval: 30s
-      start_period: 90s
       timeout: 20s
       retries: 3
-    ports:
-      - "19530:19530"
-      - "9091:9091"
+      start_period: 90s
+      start_interval: 5s
     depends_on:
       milvus-volume-init:
         condition: service_completed_successfully
       etcd:
-        condition: service_started
+        condition: service_healthy
       minio:
-        condition: service_started
-
-networks:
-  default:
-    name: milvus
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
+  milvus_data:
+  etcd_data:
+  minio_data:
   hf_cache:

@@ -1,0 +1,57 @@
+<section class="board-panel" aria-label="Échiquier">
+  <div class="board-frame">
+    <ngx-chess-board
+      #board
+      [size]="size()"
+      [lightTileColor]="'#f0d9b5'"
+      [darkTileColor]="'#b58863'"
+      [showLegalMoves]="true"
+      [showLastMove]="true"
+      (moveChange)="onMoveChange($event)"
+    />
+  </div>
+
+  <p class="status" [class.alert]="game.status() !== 'playing'" aria-live="polite">
+    {{ statusLabel() }}
+  </p>
+
+  <div class="controls">
+    <button type="button" (click)="newGame()">Nouvelle partie</button>
+    <button type="button" (click)="undo()" [disabled]="game.moves().length === 0">
+      Annuler le coup
+    </button>
+    <button type="button" (click)="flip()" [attr.aria-pressed]="flipped()">
+      Retourner l'échiquier
+    </button>
+  </div>
+
+  <div class="demo">
+    <label for="demo-line">Positions de démonstration</label>
+    <select id="demo-line" (change)="loadDemo($any($event.target).value)">
+      <option value="" [selected]="!demoLine()">Choisir une position…</option>
+      @for (line of demoLines; track line.name; let i = $index) {
+        <option [value]="i" [selected]="demoLine() === line">{{ line.name }}</option>
+      }
+    </select>
+    @if (demoLine(); as line) {
+      <p class="hint">{{ line.description }}</p>
+    }
+  </div>
+
+  <div class="history">
+    <h2>Coups joués</h2>
+    @if (moveRows().length) {
+      <ol>
+        @for (row of moveRows(); track row.number) {
+          <li>
+            <span class="number">{{ row.number }}.</span>
+            <span>{{ row.white }}</span>
+            <span>{{ row.black ?? '' }}</span>
+          </li>
+        }
+      </ol>
+    } @else {
+      <p class="hint">Jouez un coup en glissant ou en cliquant sur une pièce.</p>
+    }
+  </div>
+</section>

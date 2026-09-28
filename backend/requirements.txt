@@ -1,0 +1,11 @@
+# Versions tested together; torch (CPU build) is installed separately in the Dockerfile.
+fastapi==0.141.1
+uvicorn==0.53.0
+httpx==0.28.1
+chess==1.11.2
+pymilvus==3.0.2
+langgraph==1.2.12
+sentence-transformers==6.1.0
+transformers==5.17.0
+google-api-python-client==2.200.0
+tzdata==2026.4

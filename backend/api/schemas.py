@@ -17,9 +17,15 @@ class EvaluationResponse(BaseModel):
     mate: int | None = None
 
 
+class Opening(BaseModel):
+    eco: str
+    name: str
+
+
 class MovesResponse(BaseModel):
     fen: str
     moves: list[TheoreticalMove] = []
+    opening: Opening | None = None
 
 
 class Video(BaseModel):
@@ -51,6 +57,7 @@ class VectorSearchResult(BaseModel):
     source_url: str | None = None
     description_url: str | None = None
     text: str | None = None
+    description: str | None = None
     score: float
     videos: list[Video] = []
 

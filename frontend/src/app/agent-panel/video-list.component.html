@@ -1,0 +1,29 @@
+@if (playerUrl(); as url) {
+  <div class="player">
+    <iframe
+      [src]="url"
+      title="Lecteur vidéo YouTube"
+      allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+      referrerpolicy="strict-origin-when-cross-origin"
+    ></iframe>
+    <button type="button" class="link" (click)="playing.set(null)">Fermer le lecteur</button>
+  </div>
+}
+
+<ul>
+  @for (video of videos(); track video.video_id) {
+    <li [class.active]="playing() === video.video_id">
+      <button type="button" class="thumb" (click)="play(video)" [attr.aria-label]="'Lire : ' + video.title">
+        @if (video.thumbnail_url) {
+          <img [src]="video.thumbnail_url" alt="" loading="lazy" />
+        }
+        <span class="duration">{{ duration(video.duration_seconds) }}</span>
+      </button>
+      <div class="info">
+        <button type="button" class="title" (click)="play(video)">{{ video.title }}</button>
+        <span class="meta">{{ video.channel_title }} · {{ views(video.view_count) }}</span>
+        <a [href]="video.url" target="_blank" rel="noopener noreferrer">Ouvrir sur YouTube</a>
+      </div>
+    </li>
+  }
+</ul>

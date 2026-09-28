@@ -1,4 +1,5 @@
 import asyncio
+from functools import partial
 from typing import TypedDict
 
 from langgraph.graph import END, START, StateGraph
@@ -21,6 +22,8 @@ class VectorSearchState(TypedDict, total=False):
     query: str
     top_k: int | None
     with_videos: bool
+    requested_lang: str | None
+    eco: str | None
     lang: str
     limit: int
     query_vector: list[float]
@@ -66,7 +69,7 @@ class VectorSearchGraph:
         query = state["query"]
         limit = state.get("top_k") or requested_count(query) or DEFAULT_OPENINGS
         return {
-            "lang": detect_language(query) or DEFAULT_LANGUAGE,
+            "lang": state.get("requested_lang") or detect_language(query) or DEFAULT_LANGUAGE,
             "limit": max(1, min(limit, MAX_OPENINGS)),
         }
 
@@ -75,19 +78,32 @@ class VectorSearchGraph:
         return {"query_vector": vector}
 
     async def _search_milvus(self, state: VectorSearchState) -> dict:
-        hits = await asyncio.to_thread(
-            self._milvus.search, state["query_vector"], state["limit"] * CHUNKS_PER_OPENING
+        # An imposed language also applies to the passages; a detected one only
+        # to the videos (a French question may be best answered by an English passage).
+        search = partial(
+            self._milvus.search,
+            state["query_vector"],
+            state["limit"] * CHUNKS_PER_OPENING,
+            state.get("requested_lang"),
         )
+        # A known ECO code picks the opening's own passages; semantic search
+        # only when the corpus has none for that code.
+        hits = await asyncio.to_thread(search, state["eco"]) if state.get("eco") else []
+        if not hits:
+            hits = await asyncio.to_thread(search)
         return {"hits": hits}
 
     async def _select_openings(self, state: VectorSearchState) -> dict:
-        """Keep the best-scoring chunk of each opening (hits come sorted by score)."""
-        results, seen = [], set()
+        """One result per opening, ranked by its best chunk (hits come sorted by
+        score); its description gathers its chunks found in that chunk's language."""
+        by_opening: dict[tuple, list[dict]] = {}
         for hit in state["hits"]:
-            key = (hit.get("eco_code"), hit.get("opening_name"))
-            if key in seen:
-                continue
-            seen.add(key)
+            by_opening.setdefault((hit.get("eco_code"), hit.get("opening_name")), []).append(hit)
+
+        results = []
+        for hits in by_opening.values():
+            hit = hits[0]
+            passages = sorted((h for h in hits if h.get("lang") == hit.get("lang")), key=lambda h: h["id"])
             results.append({
                 "opening_name": hit.get("opening_name"),
                 "opening_name_fr": hit.get("opening_name_fr"),
@@ -97,6 +113,8 @@ class VectorSearchGraph:
                 "source_url": hit.get("source_url"),
                 "description_url": hit.get("description_url"),
                 "text": hit.get("text"),
+                # Chunks start with a header (names, ECO code, moves): keep their body.
+                "description": "\n\n".join(p["text"].split("\n\n", 1)[-1] for p in passages),
                 "score": hit.get("score"),
                 "videos": [],
             })
@@ -144,10 +162,21 @@ class VectorSearchGraph:
             return result["opening_name_fr"]
         return result["opening_name"]
 
-    async def run(self, query: str, top_k: int | None = None, with_videos: bool = True) -> dict:
-        final_state = await self._graph.ainvoke(
-            {"query": query, "top_k": top_k, "with_videos": with_videos}
-        )
+    async def run(
+        self,
+        query: str,
+        top_k: int | None = None,
+        with_videos: bool = True,
+        lang: str | None = None,
+        eco: str | None = None,
+    ) -> dict:
+        final_state = await self._graph.ainvoke({
+            "query": query,
+            "top_k": top_k,
+            "with_videos": with_videos,
+            "requested_lang": lang,
+            "eco": eco,
+        })
         return {
             "lang": final_state["lang"],
             "results": final_state["results"],
