@@ -85,6 +85,9 @@ FRENCH_ARTICLES = {
     ("D96", "Grünfeld Defence, Russian System"): ("Défense Grünfeld", "Le système russe", "Défense Grünfeld, système russe"),
 }
 
+# Too generic ("Open Game", "Closed Game") to find a dedicated description or video.
+EXCLUDED_ECO_CODES = {"C20", "D00"}
+
 # D70's row has no fixed move sequence ("with d7–d5"): use D80's main line.
 EXTRA_ECO_ROWS = [
     {"eco_code": "D80", "opening_name": "Grünfeld Defence",
@@ -265,7 +268,7 @@ def build(output_path: Path) -> None:
     seen, en_targets = {r["moves_san"] for r in records}, {}
     for row in sorted(parse_eco_list(wikitext(EN_API, ECO_LIST_EN)), key=lambda r: r["eco_code"]):
         moves = to_san(row["moves"])
-        if not moves or moves in seen:
+        if not moves or moves in seen or row["eco_code"] in EXCLUDED_ECO_CODES:
             continue
         seen.add(moves)
         records.append({"eco_code": row["eco_code"], "opening_name": row["opening_name"],

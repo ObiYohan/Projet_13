@@ -68,7 +68,7 @@ async def vector_search_endpoint(
 ):
     """Semantic search over the openings indexed in Milvus: one result per
     opening (`top_k`, else the number asked for in the question, else 5), each
-    with a YouTube video in the question's language (French or English)."""
+    with up to 3 YouTube videos in the question's language (French or English)."""
     try:
         found = await vector_search.run(query, top_k, with_videos)
     except MilvusServiceError as exc:

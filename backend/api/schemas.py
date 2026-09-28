@@ -52,7 +52,7 @@ class VectorSearchResult(BaseModel):
     description_url: str | None = None
     text: str | None = None
     score: float
-    video: Video | None = None
+    videos: list[Video] = []
 
 
 class VectorSearchResponse(BaseModel):

@@ -11,6 +11,7 @@ from .youtube_service import YouTubeService, YouTubeServiceError
 DEFAULT_OPENINGS = 5
 MAX_OPENINGS = 10
 DEFAULT_LANGUAGE = "fr"
+VIDEOS_PER_OPENING = 3
 # An opening has up to ~4 chunks (EN + FR): fetch enough of them to find N distinct openings.
 CHUNKS_PER_OPENING = 6
 LANGUAGE_LABELS = {"fr": "en français", "en": "en anglais"}
@@ -30,8 +31,8 @@ class VectorSearchState(TypedDict, total=False):
 
 class VectorSearchGraph:
     """LangGraph pipeline: analyse the question (language, number of openings
-    asked for), search Milvus, keep one result per opening, then suggest one
-    YouTube video per opening in the question's language."""
+    asked for), search Milvus, keep one result per opening, then suggest up to
+    VIDEOS_PER_OPENING YouTube videos per opening in the question's language."""
 
     def __init__(
         self,
@@ -97,7 +98,7 @@ class VectorSearchGraph:
                 "description_url": hit.get("description_url"),
                 "text": hit.get("text"),
                 "score": hit.get("score"),
-                "video": None,
+                "videos": [],
             })
             if len(results) == state["limit"]:
                 break
@@ -110,18 +111,18 @@ class VectorSearchGraph:
     async def _suggest_videos(self, state: VectorSearchState) -> dict:
         lang = state["lang"]
         found = await asyncio.gather(
-            *(self._find_video(result, lang) for result in state["results"]), return_exceptions=True
+            *(self._find_videos(result, lang) for result in state["results"]), return_exceptions=True
         )
         results, missing, error = [], [], None
         for result, outcome in zip(state["results"], found):
             if isinstance(outcome, YouTubeServiceError):
                 error = error or str(outcome)
-                outcome = None
+                outcome = []
             elif isinstance(outcome, BaseException):
                 raise outcome
-            if outcome is None:
+            if not outcome:
                 missing.append(self._display_name(result, lang))
-            results.append({**result, "video": outcome})
+            results.append({**result, "videos": outcome})
 
         message = error
         if not message and missing:
@@ -129,11 +130,13 @@ class VectorSearchGraph:
             message = f"Aucune vidéo pertinente {LANGUAGE_LABELS[lang]} trouvée pour {names}."
         return {"results": results, "videos_message": message}
 
-    async def _find_video(self, result: dict, lang: str) -> dict | None:
+    async def _find_videos(self, result: dict, lang: str) -> list[dict]:
         name = self._display_name(result, lang)
         aliases = tuple(n for n in (result["opening_name"], result.get("opening_name_fr")) if n and n != name)
-        found = await asyncio.to_thread(self._youtube.search_videos, name, 1, lang, aliases)
-        return found["videos"][0] if found["videos"] else None
+        found = await asyncio.to_thread(
+            self._youtube.search_videos, name, VIDEOS_PER_OPENING, lang, aliases
+        )
+        return found["videos"]
 
     @staticmethod
     def _display_name(result: dict, lang: str) -> str:
