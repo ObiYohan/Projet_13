@@ -231,6 +231,18 @@ La documentation interactive (Swagger) est disponible sur http://localhost:8000/
 - **`youtube_service.py`** : recherche, filtrage et cache des vidéos, suivi du quota.
 - **`scripts/load_openings.py`** : chargement du corpus dans Milvus (`--if-empty` au démarrage).
 
+### LangGraph
+
+Graphe utilisé dans le projet : 
+
+```
+START → analyze_query → embed_query → search_milvus → select_openings
+                                                              │
+                                              (route conditionnelle)
+                                              ├── résultats + with_videos → suggest_videos → END
+                                              └── sinon → END
+```
+
 ## Utilisation de l'API
 
 Les FEN contiennent des `/` et des espaces : les espaces doivent être encodés (`%20`), les `/` peuvent rester tels quels.
