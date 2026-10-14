@@ -5,9 +5,7 @@ Agent intelligent qui accompagne les jeunes joueurs dans l'apprentissage des ouv
 - les **meilleurs coups de la théorie** (parties de maîtres, Lichess) ;
 - le **contexte de l'ouverture** (fiches Wikipédia indexées dans Milvus, en français ou en anglais) ;
 - des **vidéos explicatives** YouTube, lisibles dans la page ;
-- une **évaluation Stockfish** dès que la partie sort des sentiers battus.
-
-> **État d'avancement** : l'interface Angular, l'API FastAPI + LangGraph, Stockfish, Lichess, le RAG Milvus et les vidéos YouTube sont fonctionnels et orchestrés par Docker Compose. Le stockage des vidéos dans MongoDB et l'analyse des vidéos (extraction de positions FEN depuis les images) restent à développer.
+- une **évaluation Stockfish** dès que la partie évolue.
 
 ## Démarrage rapide
 
@@ -53,21 +51,11 @@ Les autres variables ont des valeurs par défaut (voir les commentaires de [.env
 docker compose up -d --build
 ```
 
-La commande rend la main quand toute la chaîne est prête. Ordre de démarrage, garanti par les healthchecks :
+Ordre de démarrage :
 
 ```
 etcd, minio ─▶ standalone (Milvus) ─▶ openings-loader ─▶ api ─▶ frontend
 ```
-
-| Étape | Premier démarrage | Démarrages suivants |
-|---|---|---|
-| Build des images (sans cache Docker) | ~2 à 3 min | — (images en cache) |
-| etcd, MinIO, Milvus sains | ~10 s | ~10 s |
-| `openings-loader` : téléchargement du modèle d'embedding (1,2 Go) et calcul des vecteurs des 268 passages sur CPU | ~6 à 7 min | quelques secondes (corpus déjà présent : rien à faire) |
-| `api` puis `frontend` sains | ~20 s | ~20 s |
-| **Total** | **~10 min** | **~30 s** |
-
-Mesuré depuis une installation vierge sur une machine à 8 CPU.
 
 ### 4. Vérification
 
@@ -122,11 +110,6 @@ Le menu **« Positions de démonstration »** (sous l'échiquier) joue une séqu
 7. **Passer en EN** : contexte et vidéos basculent en anglais.
 8. **« Annuler le coup »** et **« Retourner l'échiquier »** : l'agent suit la position sans nouvel appel (cache).
 
-### Avant la démonstration
-
-- Démarrer la stack la veille ou 15 min avant (premier démarrage long, voir plus haut), puis parcourir une fois les positions : leurs vidéos sont mises en cache 24 h, ce qui ménage le quota YouTube.
-- Vérifier `docker compose ps` (tout `healthy`) et la connexion Internet (Lichess, YouTube).
-- Quota YouTube : ~100 recherches de vidéos par jour avec le quota par défaut (chaque ouverture et chaque langue = 1 recherche).
 
 ## Services Docker
 
@@ -140,7 +123,6 @@ Le menu **« Positions de démonstration »** (sous l'échiquier) joue une séqu
 | `minio` | `quay.io/minio/minio` | Stockage objet de Milvus | — | `minio_data` | `mc ready local` |
 | `milvus-volume-init` | `milvusdb/milvus:v3.0.2` | Au démarrage : donne le volume `milvus_data` à l'utilisateur de Milvus | — | `milvus_data` | code de sortie 0 |
 
-Les services permanents redémarrent automatiquement (`restart: unless-stopped`), y compris au redémarrage de Docker. Seuls l'interface et l'API sont exposées sur la machine : Milvus, etcd et MinIO ne sont joignables que sur le réseau Docker du projet.
 
 ## Données persistantes
 
@@ -189,19 +171,6 @@ docker compose stop                                # arrêter sans rien supprime
 docker compose down                                # supprimer les conteneurs (volumes conservés)
 ```
 
-## Dépannage
-
-| Symptôme | Cause probable | Solution |
-|---|---|---|
-| `env file .env not found` | `.env` absent | `cp .env.example .env` puis renseigner les clés |
-| `port is already allocated` | 4200 ou 8000 déjà utilisé | Changer `FRONTEND_PORT` / `API_PORT` dans `.env` |
-| `docker compose up` reste longtemps sur `openings-loader` | Premier démarrage : téléchargement du modèle et calcul des vecteurs | Attendre (~7 min) ; suivre avec `docker compose logs -f openings-loader` |
-| `dependency failed to start: openings-loader` | Pas d'accès à Hugging Face, ou mémoire insuffisante | `docker compose logs openings-loader` ; vérifier Internet et la RAM allouée à Docker |
-| Panneau : « Erreur 502 : Lichess opening explorer returned status 401 » | Token Lichess absent ou invalide | Renseigner `LICHESS_API_TOKEN` puis `docker compose up -d api` |
-| Vidéos : « API_KEY_YOUTUBE is not configured » | Clé YouTube absente | Renseigner `API_KEY_YOUTUBE` puis `docker compose up -d api` |
-| Vidéos : « YouTube daily quota exhausted » | Quota journalier atteint | Attendre minuit (heure du Pacifique) ; les vidéos déjà vues restent en cache |
-| Panneau : « Impossible de joindre l'API » | API arrêtée ou en cours de démarrage | `docker compose ps` ; `docker compose logs api` |
-| Contexte vide pour toutes les ouvertures | Corpus non chargé | `docker compose exec api python -m api.scripts.load_openings` |
 
 ## Interface
 
@@ -370,32 +339,12 @@ docker compose exec api python -m api.scripts.load_openings
 
 Les ouvertures au nom trop générique pour trouver une description ou des vidéos dédiées (C20 *Open Game*, D00 *Closed Game*) sont exclues (`EXCLUDED_ECO_CODES` dans le script).
 
-## Tests
-
-Tests unitaires de l'interface (Vitest, 20 tests) : logique de partie (coups reconnus depuis l'échiquier, promotion, roque, mat), légalité des positions de démonstration et orchestration de l'agent (cache, positions intermédiaires ignorées, Stockfish hors théorie, erreur réseau et nouvel essai).
-
-```bash
-cd frontend && npm test
-```
-
-Évaluation de la recherche sémantique (stack lancée et corpus chargé) : une question réussit si l'ouverture attendue figure dans le top 3.
-
-```bash
-python scripts/eval_vector_search.py            # options : --top-k 5, --url http://...
-```
-
-Résultat actuel : **2/3**. La question sur le gambit Benko en français échoue (limite connue, voir ci-dessous).
-
-Test de bout en bout réalisé avant la démonstration : installation depuis une copie vierge du dépôt (build sans cache, volumes vides), démarrage de tous les services, persistance après suppression des conteneurs, puis parcours des 7 positions de démonstration dans un navigateur (2 appels API et 2 à 3 s par position, aucune erreur).
 
 ## Limites connues et pistes
 
-- **MongoDB** n'est pas encore dans la stack : il arrivera avec le stockage des vidéos et leur analyse (extraction des positions FEN depuis les images).
 - Le cache des vidéos et le compteur de quota YouTube sont en mémoire : ils repartent à zéro au redémarrage de l'API.
 - Certaines descriptions françaises sont moins riches que les anglaises (ex. gambit Benko) ; 10 ouvertures ont été écartées faute de version française.
 - Le premier démarrage calcule les vecteurs du corpus sur CPU (~6 min).
-- L'interface enchaîne 2 appels par coup (`/moves`, puis `/evaluate` ou `/vector-search`) : un endpoint agent unique, piloté par LangGraph, garderait toute la logique de l'agent dans le backend.
-- `ngx-chess-board` 2.2.3 est compilée pour Angular 13 et utilise des directives dépréciées (`NgIf`, `NgForOf`) : à surveiller lors des montées de version d'Angular.
 
 ## Structure du dépôt
 
